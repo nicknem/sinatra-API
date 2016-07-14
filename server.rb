@@ -3,12 +3,10 @@ require 'sinatra'
 require 'sinatra/namespace'
 require 'mongoid'
 require_relative 'book' # Require the Book model
-require_relative 'book_serializer'
+require_relative 'serializer'
 
 # DB Setup
 Mongoid.load! "mongoid.config"
-
-
 
 # Endpoints
 get '/' do
@@ -19,6 +17,20 @@ namespace '/api/v1' do
 
   before do
     content_type 'application/json'
+  end
+
+  helpers do
+    def base_url
+      @base_url ||= "#{request.env['rack.url_scheme']}://#{request.env['HTTP_HOST']}"
+    end
+
+    def json_params
+      begin
+        JSON.parse(request.body.read)
+      rescue
+        halt 400, { message: 'Invalid JSON' }.to_json
+      end
+    end
   end
 
   # Index
@@ -36,6 +48,18 @@ namespace '/api/v1' do
     book = Book.where(id: id).first
     halt(404, { message: 'Book Not Found'}.to_json) unless book
     BookSerializer.new(book).to_json
+  end
+
+  # Create
+  post '/books' do
+    book = Book.new(json_params)
+    if book.save
+      response.headers['Location'] = "#{base_url}/api/v1/books/#{book.id}"
+      status 201
+    else
+      status 422
+      body BookSerializer.new(book).to_json
+    end
   end
 
 end
