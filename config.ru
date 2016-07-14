@@ -1,2 +1,2 @@
-require './booklist'
+require_relative 'server'
 run Sinatra::Application
