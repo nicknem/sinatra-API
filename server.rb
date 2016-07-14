@@ -4,6 +4,8 @@ require 'sinatra/namespace'
 require 'mongoid'
 require_relative 'book' # Require the Book model
 require_relative 'serializer'
+require_relative 'helpers'
+
 
 # DB Setup
 Mongoid.load! "mongoid.config"
@@ -72,6 +74,13 @@ namespace '/api/v1' do
       status 422
       body BookSerializer.new(book).to_json
     end
+  end
+
+  # Delete
+  delete '/books/:id' do |id|
+    book = Book.where(id: id).first
+    book.destroy if book
+    status 204
   end
 
 end
