@@ -4,13 +4,8 @@ require 'sinatra/namespace'
 require 'mongoid'
 require_relative 'book' # Require the Book model
 require_relative 'serializer'
-
-
 # DB Setup
 Mongoid.load! "mongoid.config"
-
-
-
 # Endpoints
 get '/' do
   'Welcome to BookList!'
